@@ -1,0 +1,65 @@
+# Karaoke Queue Manager
+
+This is a [Next.js](https://nextjs.org) application that helps you manage your karaoke party by providing a queue management system and YouTube video player.
+
+## Features
+
+- **Queue Management**: Add YouTube karaoke videos to a queue with your name
+- **Dual-Screen Setup**: Run the player on your TV/projector while managing the queue from your phone or laptop
+- **Simple Interface**: Easy-to-use controls for adding songs and playing videos
+- **YouTube Integration**: Works with any YouTube karaoke video
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm install
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## How to Use
+
+1. **Open the Player Screen** on your TV or projector by navigating to http://localhost:3000/player
+2. **Use the Queue Manager** on your laptop or phone by navigating to http://localhost:3000/queue
+3. **Enter your name** so everyone knows who added each song
+4. **Paste YouTube links** of karaoke videos to add them to the queue
+5. **Click "Play"** on a video in the queue to send it to the player screen
+
+The app supports various YouTube URL formats, including:
+- Standard YouTube links (youtube.com/watch?v=ID)
+- Short links (youtu.be/ID)
+- Embed links (youtube.com/embed/ID)
+- Just the video ID
+
+## Technology
+
+This project uses:
+- Next.js 15
+- React 19
+- react-youtube
+- TailwindCSS
+- TypeScript
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
