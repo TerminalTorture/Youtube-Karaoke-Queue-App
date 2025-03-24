@@ -8,7 +8,10 @@ This is a [Next.js](https://nextjs.org) application that helps you manage your k
 - **Dual-Screen Setup**: Run the player on your TV/projector while managing the queue from your phone or laptop
 - **Simple Interface**: Easy-to-use controls for adding songs and playing videos
 - **YouTube Integration**: Works with any YouTube karaoke video
-
+  
+- ![image](https://github.com/user-attachments/assets/3f660654-dcfe-43f6-a788-47f5ba37e6d0)
+- ![image](https://github.com/user-attachments/assets/afa764a5-bb19-4fe9-8808-840de652f1fd)
+- ![image](https://github.com/user-attachments/assets/3318c816-5a0d-41fa-977e-cfdf61ed1e70)
 ## Getting Started
 
 First, run the development server:
