@@ -41,6 +41,28 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
     }
   };
 
+  const handleRemoveItem = (index: number) => {
+    setQueueItems((items) => items.filter((_, i) => i !== index));
+  };
+
+  const moveItemUp = (index: number) => {
+    if (index === 0) return;
+    setQueueItems((items) => {
+      const newItems = [...items];
+      [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+      return newItems;
+    });
+  };
+
+  const moveItemDown = (index: number) => {
+    setQueueItems((items) => {
+      if (index >= items.length - 1) return items;
+      const newItems = [...items];
+      [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+      return newItems;
+    });
+  };
+
   const handlePlayVideo = (link: string) => {
     const videoId = extractVideoId(link);
     
@@ -106,9 +128,12 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
         ) : (
           <ul className="space-y-2">
             {queueItems.map((item, index) => (
-              <li key={index} className="p-3 bg-gray-50 rounded border border-gray-200 flex items-center">
-                <button 
-                  onClick={() => handlePlayVideo(item.link)} 
+              <li
+                key={index}
+                className="p-3 bg-gray-50 rounded border border-gray-200 flex items-center"
+              >
+                <button
+                  onClick={() => handlePlayVideo(item.link)}
                   className="bg-green-500 text-white px-3 py-1 mr-3 rounded flex-shrink-0"
                 >
                   Play
@@ -116,6 +141,28 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-gray-800">{item.link}</p>
                   <p className="text-sm text-gray-500">Added by: {item.username}</p>
+                </div>
+                <div className="flex space-x-1 ml-3">
+                  <button
+                    onClick={() => moveItemUp(index)}
+                    disabled={index === 0}
+                    className="bg-gray-300 text-gray-800 px-2 py-1 rounded disabled:opacity-50"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => moveItemDown(index)}
+                    disabled={index === queueItems.length - 1}
+                    className="bg-gray-300 text-gray-800 px-2 py-1 rounded disabled:opacity-50"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={() => handleRemoveItem(index)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    Remove
+                  </button>
                 </div>
               </li>
             ))}
