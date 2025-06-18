@@ -6,14 +6,16 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ws-server": "node server.js"
   },
   "dependencies": {
     "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-youtube": "^10.1.0",
-    "reat": "^0.0.1-security"
+    "reat": "^0.0.1-security",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

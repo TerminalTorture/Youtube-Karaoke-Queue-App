@@ -19,6 +19,16 @@ First, run the development server:
 ```bash
 npm install
 
+### Start the WebSocket server
+
+In a separate terminal, run:
+
+```bash
+npm run ws-server
+```
+
+This server broadcasts queue changes and the current video to all connected clients.
+
 ```bash
 npm run dev
 # or

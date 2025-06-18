@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface QueueYouTubeLinksProps {
   onPlayVideo: (videoId: string) => void;
@@ -13,6 +13,31 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
   const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
   const [newLink, setNewLink] = useState<string>('');
   const [username, setUsername] = useState<string>('');
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3001');
+    wsRef.current = ws;
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'queue' && Array.isArray(data.queue)) {
+          setQueueItems(data.queue);
+        } else if (data.type === 'init') {
+          if (Array.isArray(data.queue)) {
+            setQueueItems(data.queue);
+          }
+        }
+      } catch (err) {
+        console.error('Error parsing message', err);
+      }
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   // Extract YouTube video ID from various URL formats
   const extractVideoId = (url: string): string | null => {
@@ -36,20 +61,21 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
 
   const handleAddLink = () => {
     if (newLink.trim() && username.trim()) {
-      setQueueItems([...queueItems, { link: newLink, username: username }]);
+      const item = { link: newLink, username: username };
+      setQueueItems([...queueItems, item]);
+      wsRef.current?.send(JSON.stringify({ type: 'add', item }));
       setNewLink('');
     }
   };
 
   const handlePlayVideo = (link: string) => {
     const videoId = extractVideoId(link);
-    
+
     // Call the local player function
     onPlayVideo(videoId || link);
-    
-    // Store the ID in localStorage for the remote player page
+
     if (videoId) {
-      localStorage.setItem('currentKaraokeVideo', videoId);
+      wsRef.current?.send(JSON.stringify({ type: 'play', videoId }));
     }
   };
 
