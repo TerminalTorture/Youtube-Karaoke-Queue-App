@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface QueueYouTubeLinksProps {
   onPlayVideo: (videoId: string) => void;
@@ -13,6 +13,35 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
   const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
   const [newLink, setNewLink] = useState<string>('');
   const [username, setUsername] = useState<string>('');
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3001');
+    wsRef.current = ws;
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'queue') {
+          setQueueItems(msg.queue);
+        } else if (msg.type === 'play') {
+          onPlayVideo(msg.videoId);
+        }
+      } catch (err) {
+        console.error('WS message error', err);
+      }
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [onPlayVideo]);
+
+  const sendMessage = (data: any) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(data));
+    }
+  };
 
   // Extract YouTube video ID from various URL formats
   const extractVideoId = (url: string): string | null => {
@@ -36,7 +65,9 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
 
   const handleAddLink = () => {
     if (newLink.trim() && username.trim()) {
-      setQueueItems([...queueItems, { link: newLink, username: username }]);
+      const updated = [...queueItems, { link: newLink, username }];
+      setQueueItems(updated);
+      sendMessage({ type: 'queue', queue: updated });
       setNewLink('');
     }
   };
@@ -46,11 +77,8 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
     
     // Call the local player function
     onPlayVideo(videoId || link);
-    
-    // Store the ID in localStorage for the remote player page
-    if (videoId) {
-      localStorage.setItem('currentKaraokeVideo', videoId);
-    }
+
+    sendMessage({ type: 'play', videoId: videoId || link });
   };
 
   return (
