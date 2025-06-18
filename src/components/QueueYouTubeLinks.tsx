@@ -41,6 +41,28 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
     }
   };
 
+  const handleRemoveItem = (index: number) => {
+    setQueueItems((items) => items.filter((_, i) => i !== index));
+  };
+
+  const handleMoveItemUp = (index: number) => {
+    if (index <= 0) return;
+    setQueueItems((items) => {
+      const newItems = [...items];
+      [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+      return newItems;
+    });
+  };
+
+  const handleMoveItemDown = (index: number) => {
+    setQueueItems((items) => {
+      if (index >= items.length - 1) return items;
+      const newItems = [...items];
+      [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+      return newItems;
+    });
+  };
+
   const handlePlayVideo = (link: string) => {
     const videoId = extractVideoId(link);
     
@@ -106,16 +128,39 @@ const QueueYouTubeLinks: React.FC<QueueYouTubeLinksProps> = ({ onPlayVideo }) =>
         ) : (
           <ul className="space-y-2">
             {queueItems.map((item, index) => (
-              <li key={index} className="p-3 bg-gray-50 rounded border border-gray-200 flex items-center">
-                <button 
-                  onClick={() => handlePlayVideo(item.link)} 
-                  className="bg-green-500 text-white px-3 py-1 mr-3 rounded flex-shrink-0"
+              <li key={index} className="p-3 bg-gray-50 rounded border border-gray-200 flex items-center space-x-2">
+                <button
+                  onClick={() => handlePlayVideo(item.link)}
+                  className="bg-green-500 text-white px-3 py-1 rounded flex-shrink-0"
                 >
                   Play
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className="truncate text-gray-800">{item.link}</p>
                   <p className="text-sm text-gray-500">Added by: {item.username}</p>
+                </div>
+                <div className="flex-shrink-0 flex space-x-1">
+                  <button
+                    onClick={() => handleMoveItemUp(index)}
+                    className="bg-gray-200 text-gray-700 px-2 py-1 rounded"
+                    aria-label="Move up"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => handleMoveItemDown(index)}
+                    className="bg-gray-200 text-gray-700 px-2 py-1 rounded"
+                    aria-label="Move down"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={() => handleRemoveItem(index)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    aria-label="Remove"
+                  >
+                    ✕
+                  </button>
                 </div>
               </li>
             ))}
