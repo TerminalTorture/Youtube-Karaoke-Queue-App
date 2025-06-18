@@ -6,8 +6,7 @@ import QueueYouTubeLinks from '../../components/QueueYouTubeLinks';
 const QueuePage: React.FC = () => {
   const handlePlayVideo = (videoId: string) => {
     // This function is passed to QueueYouTubeLinks
-    // The component handles storing the videoId in localStorage
-    // so it will be available to the player page
+    // The component broadcasts the videoId over WebSocket
   };
 
   return (

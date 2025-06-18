@@ -7,24 +7,23 @@ const PlayerPage: React.FC = () => {
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Setup event listener to receive video ID from another page/window
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentKaraokeVideo' && e.newValue) {
-        setCurrentVideoId(e.newValue);
+    const ws = new WebSocket('ws://localhost:3001');
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'currentVideo' && data.videoId) {
+          setCurrentVideoId(data.videoId);
+        } else if (data.type === 'init' && data.currentVideo) {
+          setCurrentVideoId(data.currentVideo);
+        }
+      } catch (err) {
+        console.error('Error parsing message', err);
       }
     };
 
-    // Check if there's already a video ID in local storage
-    const storedVideoId = localStorage.getItem('currentKaraokeVideo');
-    if (storedVideoId) {
-      setCurrentVideoId(storedVideoId);
-    }
-
-    // Listen for changes in local storage (from the queue page)
-    window.addEventListener('storage', handleStorageChange);
-
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      ws.close();
     };
   }, []);
 
