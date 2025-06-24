@@ -92,21 +92,19 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Player$
 const PlayerPage = ()=>{
     const [currentVideoId, setCurrentVideoId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        // Setup event listener to receive video ID from another page/window
-        const handleStorageChange = (e)=>{
-            if (e.key === 'currentKaraokeVideo' && e.newValue) {
-                setCurrentVideoId(e.newValue);
+        const ws = new WebSocket('ws://localhost:3001');
+        ws.onmessage = (e)=>{
+            try {
+                const msg = JSON.parse(e.data);
+                if (msg.type === 'play') {
+                    setCurrentVideoId(msg.videoId);
+                }
+            } catch (err) {
+                console.error('WS message error', err);
             }
         };
-        // Check if there's already a video ID in local storage
-        const storedVideoId = localStorage.getItem('currentKaraokeVideo');
-        if (storedVideoId) {
-            setCurrentVideoId(storedVideoId);
-        }
-        // Listen for changes in local storage (from the queue page)
-        window.addEventListener('storage', handleStorageChange);
         return ()=>{
-            window.removeEventListener('storage', handleStorageChange);
+            ws.close();
         };
     }, []);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -117,7 +115,7 @@ const PlayerPage = ()=>{
                 children: "🎤 Karaoke Player"
             }, void 0, false, {
                 fileName: "[project]/src/app/player/page.tsx",
-                lineNumber: 33,
+                lineNumber: 30,
                 columnNumber: 7
             }, this),
             currentVideoId ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -126,12 +124,12 @@ const PlayerPage = ()=>{
                     videoId: currentVideoId
                 }, void 0, false, {
                     fileName: "[project]/src/app/player/page.tsx",
-                    lineNumber: 37,
+                    lineNumber: 34,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/player/page.tsx",
-                lineNumber: 36,
+                lineNumber: 33,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "bg-gray-900 p-12 rounded-lg text-center shadow-xl",
@@ -141,7 +139,7 @@ const PlayerPage = ()=>{
                         children: "Waiting for video selection..."
                     }, void 0, false, {
                         fileName: "[project]/src/app/player/page.tsx",
-                        lineNumber: 41,
+                        lineNumber: 38,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -149,13 +147,13 @@ const PlayerPage = ()=>{
                         children: "Use the Queue Manager to select a video to play"
                     }, void 0, false, {
                         fileName: "[project]/src/app/player/page.tsx",
-                        lineNumber: 42,
+                        lineNumber: 39,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/player/page.tsx",
-                lineNumber: 40,
+                lineNumber: 37,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -171,24 +169,24 @@ const PlayerPage = ()=>{
                             children: "queue manager"
                         }, void 0, false, {
                             fileName: "[project]/src/app/player/page.tsx",
-                            lineNumber: 49,
+                            lineNumber: 46,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/player/page.tsx",
-                    lineNumber: 47,
+                    lineNumber: 44,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/player/page.tsx",
-                lineNumber: 46,
+                lineNumber: 43,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/player/page.tsx",
-        lineNumber: 32,
+        lineNumber: 29,
         columnNumber: 5
     }, this);
 };

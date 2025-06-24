@@ -18,6 +18,39 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
     const [queueItems, setQueueItems] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [newLink, setNewLink] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [username, setUsername] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
+    const wsRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "QueueYouTubeLinks.useEffect": ()=>{
+            const ws = new WebSocket('ws://localhost:3001');
+            wsRef.current = ws;
+            ws.onmessage = ({
+                "QueueYouTubeLinks.useEffect": (e)=>{
+                    try {
+                        const msg = JSON.parse(e.data);
+                        if (msg.type === 'queue') {
+                            setQueueItems(msg.queue);
+                        } else if (msg.type === 'play') {
+                            onPlayVideo(msg.videoId);
+                        }
+                    } catch (err) {
+                        console.error('WS message error', err);
+                    }
+                }
+            })["QueueYouTubeLinks.useEffect"];
+            return ({
+                "QueueYouTubeLinks.useEffect": ()=>{
+                    ws.close();
+                }
+            })["QueueYouTubeLinks.useEffect"];
+        }
+    }["QueueYouTubeLinks.useEffect"], [
+        onPlayVideo
+    ]);
+    const sendMessage = (data)=>{
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify(data));
+        }
+    };
     // Extract YouTube video ID from various URL formats
     const extractVideoId = (url)=>{
         // Handle different YouTube URL formats
@@ -36,25 +69,64 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
         return url; // If no pattern matches, assume the input is already an ID
     };
     const handleAddLink = ()=>{
-        if (newLink.trim() && username.trim()) {
-            setQueueItems([
+        if (newLink.trim()) {
+            const linkToAdd = newLink;
+            const wasQueueEmpty = queueItems.length === 0;
+            const updated = [
                 ...queueItems,
                 {
-                    link: newLink,
-                    username: username
+                    link: linkToAdd,
+                    username: username.trim() || 'Anonymous'
                 }
-            ]);
+            ];
+            setQueueItems(updated);
+            sendMessage({
+                type: 'queue',
+                queue: updated
+            });
             setNewLink('');
+            if (wasQueueEmpty) {
+                handlePlayVideo(linkToAdd);
+            }
         }
+    };
+    const handleRemoveItem = (index)=>{
+        setQueueItems((items)=>items.filter((_, i)=>i !== index));
+    };
+    const handleMoveItemUp = (index)=>{
+        if (index <= 0) return;
+        setQueueItems((items)=>{
+            const newItems = [
+                ...items
+            ];
+            [newItems[index - 1], newItems[index]] = [
+                newItems[index],
+                newItems[index - 1]
+            ];
+            return newItems;
+        });
+    };
+    const handleMoveItemDown = (index)=>{
+        setQueueItems((items)=>{
+            if (index >= items.length - 1) return items;
+            const newItems = [
+                ...items
+            ];
+            [newItems[index], newItems[index + 1]] = [
+                newItems[index + 1],
+                newItems[index]
+            ];
+            return newItems;
+        });
     };
     const handlePlayVideo = (link)=>{
         const videoId = extractVideoId(link);
         // Call the local player function
         onPlayVideo(videoId || link);
-        // Store the ID in localStorage for the remote player page
-        if (videoId) {
-            localStorage.setItem('currentKaraokeVideo', videoId);
-        }
+        sendMessage({
+            type: 'play',
+            videoId: videoId || link
+        });
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         children: [
@@ -69,7 +141,7 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                                 children: "Your Name"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                lineNumber: 60,
+                                lineNumber: 117,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -78,16 +150,16 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                                 value: username,
                                 onChange: (e)=>setUsername(e.target.value),
                                 placeholder: "Enter your name",
-                                className: "border p-2 w-full rounded"
+                                className: "border p-2 w-full rounded text-black"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                lineNumber: 63,
+                                lineNumber: 120,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                        lineNumber: 59,
+                        lineNumber: 116,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -98,7 +170,7 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                                 children: "YouTube Link"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                lineNumber: 74,
+                                lineNumber: 131,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -107,32 +179,32 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                                 value: newLink,
                                 onChange: (e)=>setNewLink(e.target.value),
                                 placeholder: "Enter YouTube link or video ID",
-                                className: "border p-2 w-full rounded"
+                                className: "border p-2 w-full rounded text-black"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                lineNumber: 77,
+                                lineNumber: 134,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                        lineNumber: 73,
+                        lineNumber: 130,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         onClick: handleAddLink,
                         className: "bg-blue-500 text-white p-2 w-full rounded",
-                        disabled: !newLink.trim() || !username.trim(),
+                        disabled: !newLink.trim(),
                         children: "Add to Queue"
                     }, void 0, false, {
                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                        lineNumber: 87,
+                        lineNumber: 144,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                lineNumber: 58,
+                lineNumber: 115,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -148,19 +220,19 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                             children: "player screen"
                         }, void 0, false, {
                             fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                            lineNumber: 98,
+                            lineNumber: 155,
                             columnNumber: 20
                         }, this),
                         " on another device or window"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                    lineNumber: 97,
+                    lineNumber: 154,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                lineNumber: 96,
+                lineNumber: 153,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -175,7 +247,7 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                        lineNumber: 103,
+                        lineNumber: 160,
                         columnNumber: 9
                     }, this),
                     queueItems.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -183,20 +255,20 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                         children: "No songs in queue. Add some!"
                     }, void 0, false, {
                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                        lineNumber: 105,
+                        lineNumber: 162,
                         columnNumber: 11
                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
                         className: "space-y-2",
                         children: queueItems.map((item, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                className: "p-3 bg-gray-50 rounded border border-gray-200 flex items-center",
+                                className: "p-3 bg-gray-50 rounded border border-gray-200 flex items-center space-x-2",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         onClick: ()=>handlePlayVideo(item.link),
-                                        className: "bg-green-500 text-white px-3 py-1 mr-3 rounded flex-shrink-0",
+                                        className: "bg-green-500 text-white px-3 py-1 rounded flex-shrink-0",
                                         children: "Play"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                        lineNumber: 110,
+                                        lineNumber: 167,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -207,7 +279,7 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                                                 children: item.link
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                                lineNumber: 117,
+                                                lineNumber: 174,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -218,40 +290,79 @@ const QueueYouTubeLinks = ({ onPlayVideo })=>{
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                                lineNumber: 118,
+                                                lineNumber: 175,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                        lineNumber: 116,
+                                        lineNumber: 173,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex-shrink-0 flex space-x-1",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: ()=>handleMoveItemUp(index),
+                                                className: "bg-gray-200 text-gray-700 px-2 py-1 rounded",
+                                                "aria-label": "Move up",
+                                                children: "↑"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
+                                                lineNumber: 178,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: ()=>handleMoveItemDown(index),
+                                                className: "bg-gray-200 text-gray-700 px-2 py-1 rounded",
+                                                "aria-label": "Move down",
+                                                children: "↓"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
+                                                lineNumber: 185,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: ()=>handleRemoveItem(index),
+                                                className: "bg-red-500 text-white px-2 py-1 rounded",
+                                                "aria-label": "Remove",
+                                                children: "✕"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
+                                                lineNumber: 192,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
+                                        lineNumber: 177,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, index, true, {
                                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                                lineNumber: 109,
+                                lineNumber: 166,
                                 columnNumber: 15
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                        lineNumber: 107,
+                        lineNumber: 164,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-                lineNumber: 102,
+                lineNumber: 159,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/QueueYouTubeLinks.tsx",
-        lineNumber: 57,
+        lineNumber: 114,
         columnNumber: 5
     }, this);
 };
-_s(QueueYouTubeLinks, "n3K3sRSvwrsm8OM8nug46qs849k=");
+_s(QueueYouTubeLinks, "Oy+k7PG7Zul4WTx7gn41oxMfbLc=");
 _c = QueueYouTubeLinks;
 const __TURBOPACK__default__export__ = QueueYouTubeLinks;
 var _c;
@@ -275,9 +386,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$QueueYo
 ;
 const QueuePage = ()=>{
     const handlePlayVideo = (videoId)=>{
-    // This function is passed to QueueYouTubeLinks
-    // The component handles storing the videoId in localStorage
-    // so it will be available to the player page
+        localStorage.setItem('currentVideoId', videoId);
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "container mx-auto p-4",
@@ -287,7 +396,7 @@ const QueuePage = ()=>{
                 children: "🎤 Karaoke Queue Manager"
             }, void 0, false, {
                 fileName: "[project]/src/app/queue/page.tsx",
-                lineNumber: 15,
+                lineNumber: 13,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -298,20 +407,20 @@ const QueuePage = ()=>{
                         children: "Queue"
                     }, void 0, false, {
                         fileName: "[project]/src/app/queue/page.tsx",
-                        lineNumber: 18,
+                        lineNumber: 16,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$QueueYouTubeLinks$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
                         onPlayVideo: handlePlayVideo
                     }, void 0, false, {
                         fileName: "[project]/src/app/queue/page.tsx",
-                        lineNumber: 19,
+                        lineNumber: 17,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/queue/page.tsx",
-                lineNumber: 17,
+                lineNumber: 15,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -327,25 +436,25 @@ const QueuePage = ()=>{
                             children: "player screen"
                         }, void 0, false, {
                             fileName: "[project]/src/app/queue/page.tsx",
-                            lineNumber: 25,
+                            lineNumber: 23,
                             columnNumber: 11
                         }, this),
                         "displays on another device"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/queue/page.tsx",
-                    lineNumber: 23,
+                    lineNumber: 21,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/queue/page.tsx",
-                lineNumber: 22,
+                lineNumber: 20,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/queue/page.tsx",
-        lineNumber: 14,
+        lineNumber: 12,
         columnNumber: 5
     }, this);
 };
